@@ -37,7 +37,7 @@ trait AttributeSupportTrait {
      */
     public function getAttributeDefinition($key)
     {
-        return array_get($this->getAttributeDefinitions(), $key, ['type' => Attribute::Mixed]);
+        return array_get($this->getAttributeDefinitions(), $key, Attribute::getBaseDefintion());
     }
 
     /**
@@ -49,6 +49,25 @@ trait AttributeSupportTrait {
     {
         $definition = $this->getAttributeDefinition($key);
         return array_get($definition, 'type', Attribute::Mixed);
+    }
+
+    /**
+     * @return array
+     */
+    public function getNonEntityAttributes()
+    {
+        return array_filter(array_keys($this->getAttributeDefinitions()), function($key){
+            return !$this->isEntity($key);
+        });
+    }
+    /**
+     * @return array
+     */
+    public function getEntityAttributes()
+    {
+        return array_filter(array_keys($this->getAttributeDefinitions()), function($key){
+            return $this->isEntity($key);
+        });
     }
 
     /**
@@ -94,5 +113,15 @@ trait AttributeSupportTrait {
     public function isDateType($key)
     {
         return Attribute::isDateType($this->getAttributeType($key));
+    }
+
+    /**
+     * Determine if an attribute exists
+     * @param  string  $key
+     * @return boolean
+     */
+    public function isEntity($key)
+    {
+        return $this->getAttributeType($key) === Attribute::Entity;
     }
 } 

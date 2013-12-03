@@ -218,16 +218,6 @@ abstract class BaseAttributeEntity extends BaseEntity
 	}
 
 	/**
-	 * Determine if an attribute exists
-	 * @param  string  $key
-	 * @return boolean
-	 */
-	public function isEntity($key)
-	{
-		return $this->attributeTypeMatches($key, Attribute::Entity);
-	}
-
-	/**
 	 * Get raw attribute definitions
 	 * @return array
 	 */
