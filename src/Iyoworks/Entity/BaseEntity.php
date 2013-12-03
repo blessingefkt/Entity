@@ -11,6 +11,10 @@ use Illuminate\Support\Contracts\ArrayableInterface;
 abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableInterface {
     use CachableMutatorsTrait;
     /**
+     * @const string
+     */
+    const MUTATOR_SUFFIX = 'Attribute';
+    /**
      * @var array
      */
     protected $attributes = [];
@@ -167,7 +171,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function hasGetMutator($key)
 	{
-		return method_exists($this, 'get'.studly_case($key).'AttributeType');
+		return method_exists($this, 'get'.studly_case($key).static::MUTATOR_SUFFIX);
 	}
 
 	/**
@@ -196,7 +200,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function hasSetMutator($key)
 	{
-		return method_exists($this, 'set'.studly_case($key).'AttributeType');
+		return method_exists($this, 'set'.studly_case($key).static::MUTATOR_SUFFIX);
 	}
 
 	/**
@@ -207,7 +211,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	protected function mutateAttribute($key, $value)
 	{
-		return $this->{'get'.studly_case($key).'AttributeType'}($value);
+		return $this->{'get'.studly_case($key).static::MUTATOR_SUFFIX}($value);
 	}
 
 	/**
@@ -218,7 +222,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	protected function mutateAttributeSetter($key, $value)
 	{
-		return $this->{'set'.studly_case($key).'AttributeType'}($value);
+		return $this->{'set'.studly_case($key).static::MUTATOR_SUFFIX}($value);
 	}
 
 	/**
