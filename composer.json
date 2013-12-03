@@ -1,0 +1,29 @@
+{
+  "name": "iyoworks/entity",
+  "description": "Entity classes with Attribute Types",
+  "keywords" : [ "entity", "attributes", "object"],
+  "authors": [
+    {
+      "name": "Blessing Osakue",
+      "email": "iyoworks@gmail.com"
+    }
+  ],
+  "require": {
+    "illuminate/support": ">=4.0"
+  },
+  "require-dev": {
+    "mockery/mockery": "*",
+    "phpunit/phpunit": "3.7.*"
+  },
+  "autoload": {
+    "psr-0": {
+      "Iyoworks": "src"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  },
+  "minimum-stability": "dev"
+}
