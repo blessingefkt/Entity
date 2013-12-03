@@ -70,7 +70,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 		$defs = $this->getAttributeDefinitions();
 		$defaults = [];
 		foreach ($defs as $key => $def) {
-			$defaults[$key] = AttributeType::get($def, null);
+			$defaults[$key] = Attribute::get($def, null);
 		}
 		return $defaults;
 	}
@@ -121,7 +121,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 
 		if($this->isDefinedAttribute($key))
 		{
-			$value = AttributeType::get($this->getAttributeDefinition($key), $value);
+			$value = Attribute::get($this->getAttributeDefinition($key), $value);
 		}
 
 		// If the attribute has a get mutator, we will call that then return what
@@ -156,7 +156,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 
 		// If the value has not been set, check if it has a valid attribute type
 		// if so, get the default value for the type
-		return AttributeType::get($this->getAttributeDefinition($key), null);
+		return Attribute::get($this->getAttributeDefinition($key), null);
 	}
 
     /**
@@ -178,7 +178,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 	public function setAttribute($key, $value)
 	{
 		if($this->isDefinedAttribute($key))
-			$value = AttributeType::set($this->getAttributeDefinition($key), $value);
+			$value = Attribute::set($this->getAttributeDefinition($key), $value);
 
 		// First we will check for the presence of a mutator for the set operation
 		// which simply lets the developers tweak the attribute as it is set on
@@ -224,7 +224,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 	 */
 	public function isEntity($key)
 	{
-		return $this->attributeTypeMatches($key, AttributeType::Entity);
+		return $this->attributeTypeMatches($key, Attribute::Entity);
 	}
 
 	/**
@@ -235,8 +235,8 @@ abstract class BaseAttributeEntity extends BaseEntity
 	{
 		if($this->usesTimestamps)
 		{
-			$this->attributeDefinitions[static::CREATED_AT] = AttributeType::Timestamp;
-			$this->attributeDefinitions[static::UPDATED_AT] = AttributeType::Timestamp;
+			$this->attributeDefinitions[static::CREATED_AT] = Attribute::Timestamp;
+			$this->attributeDefinitions[static::UPDATED_AT] = Attribute::Timestamp;
 		}
 		return $this->attributeDefinitions;
 	}

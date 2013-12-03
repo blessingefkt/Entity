@@ -167,7 +167,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function hasGetMutator($key)
 	{
-		return method_exists($this, 'get'.studly_case($key).'Attribute');
+		return method_exists($this, 'get'.studly_case($key).'AttributeType');
 	}
 
 	/**
@@ -196,7 +196,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function hasSetMutator($key)
 	{
-		return method_exists($this, 'set'.studly_case($key).'Attribute');
+		return method_exists($this, 'set'.studly_case($key).'AttributeType');
 	}
 
 	/**
@@ -207,7 +207,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	protected function mutateAttribute($key, $value)
 	{
-		return $this->{'get'.studly_case($key).'Attribute'}($value);
+		return $this->{'get'.studly_case($key).'AttributeType'}($value);
 	}
 
 	/**
@@ -218,7 +218,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	protected function mutateAttributeSetter($key, $value)
 	{
-		return $this->{'set'.studly_case($key).'Attribute'}($value);
+		return $this->{'set'.studly_case($key).'AttributeType'}($value);
 	}
 
 	/**

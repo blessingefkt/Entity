@@ -11,7 +11,7 @@ trait CachableAttributesTrait {
     protected function cacheAttributeDefinitions($group, array $defs)
     {
         foreach ($defs as $attr => $def) {
-            $defs[$attr] = AttributeType::getFullDefinition($def);
+            $defs[$attr] = Attribute::getFullDefinition($def);
         }
         if(isset(static::$attributeDefinitionsCache[$group]))
             $defs = array_replace_recursive(static::$attributeDefinitionsCache[$group], $defs);

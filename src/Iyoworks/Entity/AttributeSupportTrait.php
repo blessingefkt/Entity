@@ -37,7 +37,7 @@ trait AttributeSupportTrait {
      */
     public function getAttributeDefinition($key)
     {
-        return array_get($this->getAttributeDefinitions(), $key, ['type' => AttributeType::Mixed]);
+        return array_get($this->getAttributeDefinitions(), $key, ['type' => Attribute::Mixed]);
     }
 
     /**
@@ -48,7 +48,7 @@ trait AttributeSupportTrait {
     public function getAttributeType($key)
     {
         $definition = $this->getAttributeDefinition($key);
-        return array_get($definition, 'type', AttributeType::Mixed);
+        return array_get($definition, 'type', Attribute::Mixed);
     }
 
     /**
@@ -93,6 +93,6 @@ trait AttributeSupportTrait {
      */
     public function isDateType($key)
     {
-        return AttributeType::isDateType($this->getAttributeType($key));
+        return Attribute::isDateType($this->getAttributeType($key));
     }
 } 

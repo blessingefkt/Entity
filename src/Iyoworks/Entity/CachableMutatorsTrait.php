@@ -19,7 +19,7 @@ trait CachableMutatorsTrait {
         // need to be fast. This will let us always know the attributes mutate.
         foreach (get_class_methods($class) as $method)
         {
-            if (preg_match('/^get(.+)Attribute$/', $method, $matches))
+            if (preg_match('/^get(.+)AttributeType$/', $method, $matches))
             {
                 static::$mutatorCache[$class][] = lcfirst($matches[1]);
             }
