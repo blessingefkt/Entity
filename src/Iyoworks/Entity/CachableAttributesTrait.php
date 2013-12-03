@@ -8,7 +8,7 @@ trait CachableAttributesTrait {
      */
     protected static $attributeDefinitionsCache = [];
 
-    protected function cacheAttributeDefinitions($group, array $defs)
+    protected static function cacheAttributeDefinitions($group, array $defs)
     {
         foreach ($defs as $attr => $def) {
             $defs[$attr] = Attribute::getFullDefinition($def);
