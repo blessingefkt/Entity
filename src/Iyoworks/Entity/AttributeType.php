@@ -264,7 +264,11 @@ class AttributeType extends AttributeEnum {
         return array_merge($this->baseDefinition, $defaults, $definition);
     }
 
-    protected  function resolveType($definition)
+    /**
+     * @param mixed $definition
+     * @return array
+     */
+    protected function resolveType($definition)
     {
         if(is_array($definition))
         {
@@ -275,7 +279,6 @@ class AttributeType extends AttributeEnum {
             $definition = ['type' => $definition];
         return $definition;
     }
-
 
     /**
      * @return array
