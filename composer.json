@@ -1,6 +1,6 @@
 {
     "name": "iyoworks/entity",
-    "description": "Entity classes with AttributeType Types",
+    "description": "Entity classes with attribute types",
     "keywords" : [ "entity", "attributes", "object"],
     "authors": [
         {
