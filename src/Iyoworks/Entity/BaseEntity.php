@@ -165,16 +165,6 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	}
 
 	/**
-	 * Determine if a get mutator exists for an attribute.
-	 * @param  string  $key
-	 * @return bool
-	 */
-	public function hasGetMutator($key)
-	{
-		return method_exists($this, 'get'.studly_case($key).static::MUTATOR_SUFFIX);
-	}
-
-	/**
 	 * Set a given attribute on the entity.
 	 * @param  string  $key
 	 * @param  mixed   $value
@@ -191,16 +181,6 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		}
 
 		$this->attributes[$key] = $value;
-	}
-
-	/**
-	 * Determine if a set mutator exists for an attribute.
-	 * @param  string  $key
-	 * @return bool
-	 */
-	public function hasSetMutator($key)
-	{
-		return method_exists($this, 'set'.studly_case($key).static::MUTATOR_SUFFIX);
 	}
 
 	/**
@@ -310,9 +290,11 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 * Get the mutated attributes for a given instance.
 	 * @return array
 	 */
-	public function getMutatedAttributes()
+	public function allMutators()
 	{
-		return $this->hasMutators() ? $this->getMutators() : [];
+        $mutators = array_merge($this->allGetMutators(), $this->allSetMutators());
+        ksort($mutators);
+		return $mutators;
 	}
 
 	/**
@@ -355,7 +337,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
         // the mutator for the attribute. We cache off every mutated attributes so
         // we don't have to constantly check on attributes that actually change.
 
-        foreach ($this->getMutatedAttributes() as $key)
+        foreach ($this->allGetMutators() as $key)
         {
             if (! array_key_exists($key, $attributes)) continue;
 

@@ -335,7 +335,7 @@ abstract class BaseAttributeEntity extends BaseEntity
         // the mutator for the attribute. We cache off every mutated attributes so
         // we don't have to constantly check on attributes that actually change.
 
-        foreach ($this->getMutatedAttributes() as $key)
+        foreach ($this->allGetMutators() as $key)
         {
             if (! array_key_exists($key, $attributes)) continue;
 
@@ -357,7 +357,7 @@ abstract class BaseAttributeEntity extends BaseEntity
         // the mutator for the attribute. We cache off every mutated attributes so
         // we don't have to constantly check on attributes that actually change.
 
-        foreach ($this->getMutatedAttributes() as $key)
+        foreach ($this->allGetMutators() as $key)
         {
             if (! array_key_exists($key, $attributes)) continue;
 
