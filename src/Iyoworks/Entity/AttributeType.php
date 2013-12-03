@@ -1,6 +1,7 @@
 <?php namespace Iyoworks\Entity;
 
 use DateTime;
+use Iyoworks\Support\Str;
 
 class AttributeType extends AttributeEnum {
 
