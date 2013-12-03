@@ -17,7 +17,8 @@ class AttributeType extends AttributeEnum {
         ],
         AttributeType::Entity => [
             'class' => null,
-            'many' => false
+            'many' => false,
+            'indexKey' => 'id'
         ],
         AttributeType::Json => [
             'force' => false
@@ -105,18 +106,34 @@ class AttributeType extends AttributeEnum {
         return (double) $value;
     }
 
-    public function getEntity($value, array $def)
+    public function setEntity($value, array $def)
     {
-        if(is_null($value))
+        $class = $def['class'];
+        if (is_array($value) and is_subclass_of($class, 'Iyoworks\Entity\BaseEntity'))
         {
-            $class = $def['class'] ?: 'StdClass';
-            return new $class;
+            if ($def['many'])
+            {
+                $collection = new Collection;
+                foreach ($value as $_ent)
+                {
+                    $collection[ $_ent[ $def['indexKey'] ] ] = $this->buildEntity($class, $_ent);
+                }
+                return $collection;
+            }
+
+            return $this->buildEntity($class, $value);
         }
         return $value;
     }
 
-    public function setEntity($value, array $def)
+    public function getEntity($value, array $def)
     {
+        if(is_null($value))
+        {
+            if ($def['many']) return new Collection;
+            $class = $def['class'] ?: 'stdClass';
+            return new $class;
+        }
         return $value;
     }
 
@@ -240,14 +257,24 @@ class AttributeType extends AttributeEnum {
      */
     public function getFullDefinition($definition)
     {
-        if(!is_array($definition))
-            $definition = ['type' => $definition];
-        elseif (!isset($definition['type']))
-            $definition['type'] = array_pop($definition);
+        $definition = $this->resolveType($definition);
 
         $defaults = array_get(static::$defaultDefinitions, $definition['type'], []);
 
         return array_merge($this->baseDefinition, $defaults, $definition);
+    }
+
+    /**
+     * @return array
+     */
+    public function getBaseDefintion()
+    {
+        return $this->baseDefinition;
+    }
+
+    protected function buildEntity($class, $data)
+    {
+        return with( new $class )->buildNewInstance($data);
     }
 
     protected function newDateObject($value = null)
