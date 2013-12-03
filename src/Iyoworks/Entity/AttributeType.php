@@ -264,6 +264,19 @@ class AttributeType extends AttributeEnum {
         return array_merge($this->baseDefinition, $defaults, $definition);
     }
 
+    protected  function resolveType($definition)
+    {
+        if(is_array($definition))
+        {
+            if (!isset($definition['type']))
+                $definition['type'] = array_shift($definition);
+        }
+        else
+            $definition = ['type' => $definition];
+        return $definition;
+    }
+
+
     /**
      * @return array
      */
