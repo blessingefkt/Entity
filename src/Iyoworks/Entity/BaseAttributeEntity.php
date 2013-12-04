@@ -314,22 +314,12 @@ abstract class BaseAttributeEntity extends BaseEntity
     }
 
     /**
-     * Convert the entity instance to an array.
+     * Get an array of all attributes that are not entities
      * @return array
      */
-    public function attributeArray($keys = null)
+    public function attributeArray()
     {
-        if($keys)
-        {
-            if (!is_array($keys)) $keys = func_get_args();
-            $attributes = array_intersect_key($this->attributes, $keys);
-        }
-        else
-            $attributes = $this->attributes;
-
-        // We want to spin through all the mutated attributes for this entity and call
-        // the mutator for the attribute. We cache off every mutated attributes so
-        // we don't have to constantly check on attributes that actually change.
+        $attributes = array_intersect_key($this->attributes, $this->getNonEntityAttributes());
 
         foreach ($this->allGetMutators() as $key)
         {
@@ -339,6 +329,27 @@ abstract class BaseAttributeEntity extends BaseEntity
         }
 
         return $this->processArray($attributes);
+    }
+
+    /**
+     * Get an array of all entities
+     * @return array
+     */
+    public function entityArray()
+    {
+        $attributes = array_intersect_key($this->attributes, $this->getEntityAttributes());
+
+        foreach ($attributes as $key => &$value)
+        {
+            if ($this->hasGetMutator($key))
+                $value = $this->mutateAttribute($key, $value);
+            if ($attributes instanceof ArrayableInterface)
+                $value = $value->toArray();
+            elseif ($attributes instanceof JsonableInterface)
+                $value = json_decode($value->toJson(), 1);
+        }
+
+        return $attributes;
     }
 
     /**

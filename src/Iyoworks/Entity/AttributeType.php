@@ -17,9 +17,10 @@ class AttributeType extends AttributeEnum {
             'guarded' => true
         ],
         AttributeType::Entity => [
+            'key' => null,
             'class' => null,
             'many' => false,
-            'indexKey' => 'id'
+            'indexKey' => 'id',
         ],
         AttributeType::Json => [
             'force' => false
