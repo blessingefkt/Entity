@@ -319,7 +319,8 @@ abstract class BaseAttributeEntity extends BaseEntity
      */
     public function attributeArray()
     {
-        $attributes = array_intersect_key($this->attributes, $this->getNonEntityAttributes());
+        $keys = array_flip($this->getNonEntityAttributes());
+        $attributes = array_intersect_key($this->attributes, $keys);
 
         foreach ($this->allGetMutators() as $key)
         {
@@ -337,7 +338,8 @@ abstract class BaseAttributeEntity extends BaseEntity
      */
     public function entityArray()
     {
-        $attributes = array_intersect_key($this->attributes, $this->getEntityAttributes());
+        $keys = array_flip($this->getEntityAttributes());
+        $attributes = array_intersect_key($this->attributes, $keys);
 
         foreach ($attributes as $key => &$value)
         {
