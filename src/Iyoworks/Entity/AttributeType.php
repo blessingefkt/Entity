@@ -1,11 +1,11 @@
 <?php namespace Iyoworks\Entity;
 
-use \DateTime;
-use \Illuminate\Support\Collection;
-use \Iyoworks\Support\Str;
+use DateTime;
+use Illuminate\Support\Collection;
+use Iyoworks\Support\Str;
 
 class AttributeType extends AttributeEnum {
-
+    protected static $booted = false;
     protected $baseDefinition = [
         'guarded' => null,
         'visible' => true,
@@ -20,7 +20,7 @@ class AttributeType extends AttributeEnum {
             'key' => null,
             'class' => null,
             'many' => false,
-            'indexKey' => 'id',
+            'pivots' => [],
         ],
         AttributeType::Json => [
             'force' => false
@@ -35,6 +35,17 @@ class AttributeType extends AttributeEnum {
             'auto' => false
         ]
     ];
+
+    function __construct()
+    {
+        if (!static::$booted)
+        {
+            static::boot();
+            static::$booted = true;
+        }
+    }
+
+    protected static function boot() { }
 
     public function set($type, $value)
     {

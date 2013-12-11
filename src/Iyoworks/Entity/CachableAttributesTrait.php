@@ -1,6 +1,10 @@
 <?php namespace Iyoworks\Entity;
 
 trait CachableAttributesTrait {
+    /**
+     * @var array
+     */
+    protected static $pivotKeys = [];
 
     /**
      * The cache of the attribute definitions for each class.
@@ -12,6 +16,10 @@ trait CachableAttributesTrait {
     {
         foreach ($defs as $attr => $def) {
             $defs[$attr] = Attribute::getFullDefinition($def);
+            if ($def['type'] == Attribute::Entity)
+            {
+                static::$pivotKeys[$group][$attr] = $def['pivots'];
+            }
         }
         if(isset(static::$attributeDefinitionsCache[$group]))
             $defs = array_replace_recursive(static::$attributeDefinitionsCache[$group], $defs);
@@ -25,6 +33,30 @@ trait CachableAttributesTrait {
     public function getAttributeDefinitions()
     {
         return array_get(static::$attributeDefinitionsCache, get_class($this), []);
+    }
+
+    /**
+     * @param $attr
+     * @return bool
+     */
+    public function isPivot($attr)
+    {
+        foreach (static::$pivotKeys[get_class($this)] as $key => $pivot) {
+            if ($pivot == $attr) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param $attr
+     * @return string|null
+     */
+    public function getPivotOwner($attr)
+    {
+        foreach (static::$pivotKeys[get_class($this)] as $key => $pivot) {
+            if ($pivot == $attr) return $key;
+        }
+        return null;
     }
 
     /**
