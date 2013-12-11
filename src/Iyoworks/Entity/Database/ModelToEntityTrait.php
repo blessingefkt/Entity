@@ -48,7 +48,7 @@ trait ModelToEntityTrait {
 	 */
 	public function newQuery($excludeDeleted = true)
 	{
-		$builder = new EntityBuilder($this->newBaseQueryBuilder());
+		$builder = $this->newEntityBuilder($this->newBaseQueryBuilder());
 
 		// Once we have the query builders, we will set the model instances so the
 		// builder can easily access any information it may need from the model
@@ -62,6 +62,15 @@ trait ModelToEntityTrait {
 
 		return $builder;
 	}
+
+    /**
+     * @param $baseBuilder
+     * @return EntityBuilder
+     */
+    public function newEntityBuilder($baseBuilder)
+    {
+        return new EntityBuilder($baseBuilder);
+    }
 
 	/**
 	 * @return bool
