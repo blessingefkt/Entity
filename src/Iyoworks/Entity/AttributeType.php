@@ -19,8 +19,7 @@ class AttributeType extends AttributeEnum {
         AttributeType::Entity => [
             'key' => null,
             'class' => null,
-            'many' => false,
-            'pivots' => [],
+            'many' => false
         ],
         AttributeType::Json => [
             'force' => false
