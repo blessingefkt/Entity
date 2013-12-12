@@ -69,7 +69,7 @@ trait ModelToEntityTrait {
      */
     public function newEntityBuilder($baseBuilder)
     {
-        return new EntityBuilder($baseBuilder);
+        return new EntityBuilder($baseBuilder, $this->useModel);
     }
 
 	/**
