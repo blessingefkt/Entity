@@ -53,7 +53,7 @@ trait ModelToEntityTrait {
 		// Once we have the query builders, we will set the model instances so the
 		// builder can easily access any information it may need from the model
 		// while it is constructing and executing various queries against it.
-		$builder->setModel($this)->with($this->with);
+		$builder->setModel($this, $this->useModel)->with($this->with);
 
 		if ($excludeDeleted && $this->softDelete)
 		{
@@ -63,14 +63,14 @@ trait ModelToEntityTrait {
 		return $builder;
 	}
 
-    /**
-     * @param $baseBuilder
-     * @return EntityBuilder
-     */
-    public function newEntityBuilder($baseBuilder)
-    {
-        return new EntityBuilder($baseBuilder);
-    }
+	/**
+	 * @param $baseBuilder
+	 * @return EntityBuilder
+	 */
+	public function newEntityBuilder($baseBuilder)
+	{
+		return new EntityBuilder($baseBuilder);
+	}
 
 	/**
 	 * @return bool
