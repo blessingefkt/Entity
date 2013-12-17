@@ -14,6 +14,13 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      * @const string
      */
     const MUTATOR_SUFFIX = 'Attribute';
+
+    /**
+     * The array of booted entities.
+     * @var array
+     */
+    protected static $booted = array();
+
     /**
      * @var array
      */
@@ -22,24 +29,25 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      * @var array
      */
     protected $original = [];
+    /**
+     * @var bool
+     */
+    public $exists = true;
 
-	/**
-	 * The array of booted entities.
-	 * @var array
-	 */
-	protected static $booted = array();
-
-	/**
-	 * Create a new instance
-	 * @param  array   $attributes
-	 */
-	public function __construct(array $attributes = [])
+    /**
+     * Create a new instance
+     * @param  array $attributes
+     * @param bool $exists
+     */
+	public function __construct(array $attributes = [], $exists = false)
 	{
 		if ( ! isset(static::$booted[$class = get_class($this)]))
 		{
 			static::boot($this);
 			static::$booted[$class] = true;
 		}
+
+        $this->exists = $exists;
 		$this->fill($attributes + $this->getDefaultAttributeValues());
 	}
 
@@ -87,15 +95,17 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		return [];
 	}
 
-	/**
-	 * Creates a new entity from the query builder result
-	 * @param  array  $result
-	 * @return \Iyoworks\Entity\BaseEntity
-	 */
-	public function buildNewInstance($result)
+    /**
+     * Creates a new entity from the query builder result
+     * @param  array $result
+     * @param bool $exists
+     * @return \Iyoworks\Entity\BaseEntity
+     */
+	public function buildNewInstance($result, $exists = true)
 	{
 		$inst = $this->newInstance();
 		$inst->setRawAttributes( (array) $result, true);
+        $this->exists = $exists;
 		return $inst;
 	}
 
@@ -303,8 +313,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function exists()
 	{
-		$value = $this->getKey();
-		return isset($value);
+        return $this->exists;
 	}
 
 	/**
