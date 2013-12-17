@@ -1,8 +1,8 @@
 <?php namespace Iyoworks\Entity;
 
 use ArrayAccess;
-use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Illuminate\Support\Contracts\JsonableInterface;
 
 /**
  * Class BaseEntity
@@ -158,7 +158,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		// If the key references an attribute, we can just go ahead and return the
 		// plain attribute value from the entity. This allows every attribute to
 		// be dynamically accessed through the _get method without accessors.
-		if ($inAttributes || $this->isEntity($key) || $this->hasGetMutator($key))
+		if ($inAttributes || $this->hasGetMutator($key))
 		{
 			return $this->getAttributeValue($key);
 		}
