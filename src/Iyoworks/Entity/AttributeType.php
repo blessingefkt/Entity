@@ -5,6 +5,7 @@ use Illuminate\Support\Collection;
 use Iyoworks\Support\Str;
 
 class AttributeType extends AttributeEnum {
+    const DEFAULT_COLLECTION_CLASS = 'Illuminate\Support\Collection';
     protected static $booted = false;
     protected $baseDefinition = [
         'guarded' => null,
@@ -20,7 +21,8 @@ class AttributeType extends AttributeEnum {
             'key' => null,
             'class' => null,
             'many' => false,
-            'collection' => 'Illuminate\Support\Collection',
+            'collection' => self::DEFAULT_COLLECTION_CLASS,
+            'indexKey' => 'id'
         ],
         AttributeType::Json => [
             'force' => false
@@ -126,14 +128,7 @@ class AttributeType extends AttributeEnum {
         {
             if ($def['many'])
             {
-                $collectionParams = explode('|', $def['collection']);
-                $collClass = array_shift($collectionParams);
-                $collection = new $collClass;
-                foreach($collectionParams as $param)
-                {
-                    list($pKey, $pVal) = explode(':', $param);
-                    $collection->{$pKey}($pVal);
-                }
+                $collection = $this->makeCollection($def['collection']);
 
                 foreach ($value as $_ent)
                 {
@@ -151,7 +146,7 @@ class AttributeType extends AttributeEnum {
     {
         if(is_null($value))
         {
-            if ($def['many']) return new Collection;
+            if ($def['many']) return $this->makeCollection($def['collection']);
             $class = $def['class'] ?: 'stdClass';
             return new $class;
         }
@@ -330,5 +325,26 @@ class AttributeType extends AttributeEnum {
     protected function newDateFromFormat($value, $format)
     {
         return new DateTime($value);
+    }
+
+    private function makeCollection(array $def = null)
+    {
+        if ($def)
+        {
+            $collectionParams = explode('|', $def['collection']);
+            $collClass = array_shift($collectionParams);
+            $collection = new $collClass;
+            foreach($collectionParams as $param)
+            {
+                list($pKey, $pVal) = explode(':', $param);
+                $collection->{$pKey}($pVal);
+            }
+        }
+        else
+        {
+            $collClass = self::DEFAULT_COLLECTION_CLASS;
+            $collection = new $collClass;
+        }
+        return $collection;
     }
 }
