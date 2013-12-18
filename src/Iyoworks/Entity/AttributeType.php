@@ -19,7 +19,8 @@ class AttributeType extends AttributeEnum {
         AttributeType::Entity => [
             'key' => null,
             'class' => null,
-            'many' => false
+            'many' => false,
+            'collection' => 'Illuminate\Support\Collection',
         ],
         AttributeType::Json => [
             'force' => false
@@ -125,7 +126,15 @@ class AttributeType extends AttributeEnum {
         {
             if ($def['many'])
             {
-                $collection = new Collection;
+                $collectionParams = explode('|', $def['collection']);
+                $collClass = array_shift($collectionParams);
+                $collection = new $collClass;
+                foreach($collectionParams as $param)
+                {
+                    list($pKey, $pVal) = explode(':', $param);
+                    $collection->{$pKey}($pVal);
+                }
+
                 foreach ($value as $_ent)
                 {
                     $collection[ $_ent[ $def['indexKey'] ] ] = $this->buildEntity($class, $_ent);
