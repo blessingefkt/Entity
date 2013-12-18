@@ -21,6 +21,7 @@ class AttributeType extends AttributeEnum {
             'key' => null,
             'class' => null,
             'many' => false,
+            'pivot_data' => [],
             'collection' => self::DEFAULT_COLLECTION_CLASS,
             'indexKey' => 'id'
         ],
@@ -299,7 +300,7 @@ class AttributeType extends AttributeEnum {
     /**
      * @return array
      */
-    public function getBaseDefintion()
+    public function getBaseDefinition()
     {
         return $this->baseDefinition;
     }

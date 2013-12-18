@@ -12,9 +12,18 @@ trait CachableAttributesTrait {
         foreach ($defs as $attr => $def) {
             $defs[$attr] = Attribute::getFullDefinition($def);
         }
+
         if(isset(static::$attributeDefinitionsCache[$group]))
             $defs = array_replace_recursive(static::$attributeDefinitionsCache[$group], $defs);
         static::$attributeDefinitionsCache[$group] = $defs;
+
+        $entityRelations = array_filter($defs, function($def){
+            return $def['type'] === Attribute::Entity;
+        });
+
+        foreach ($entityRelations as $def) {
+            static::cacheAttributeDefinitions($def['class'], $def['pivot_data']);
+        }
     }
 
     /**
