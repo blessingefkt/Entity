@@ -37,7 +37,7 @@ trait ModelToEntityTrait {
      */
     public function newEntityCollection($entities)
     {
-        return new Collection($entities);
+        return $this->newCollection($entities);
     }
 
     /**

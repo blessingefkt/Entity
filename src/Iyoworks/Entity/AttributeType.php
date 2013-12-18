@@ -22,6 +22,7 @@ class AttributeType extends AttributeEnum {
             'class' => null,
             'many' => false,
             'collection' => self::DEFAULT_COLLECTION_CLASS,
+            'pivot_data' => [null, []],
             'indexKey' => 'id'
         ],
         AttributeType::Json => [
@@ -299,7 +300,7 @@ class AttributeType extends AttributeEnum {
     /**
      * @return array
      */
-    public function getBaseDefintion()
+    public function getBaseDefinition()
     {
         return $this->baseDefinition;
     }
