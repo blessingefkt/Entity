@@ -14,15 +14,7 @@ class EntityBuilder extends EloquentBuilder {
 	 */
 	public function get($columns = array('*'))
 	{
-		$models = $this->getModels($columns);
-
-		// If we actually found models we will also eager load any relationships that
-		// have been specified as needing to be eager loaded, which will solve the
-		// n+1 query issue for the developers to avoid running a lot of queries.
-		if (count($models) > 0)
-		{
-			$models = $this->eagerLoadRelations($models);
-		}
+		$models = parent::get($columns);
 
 		if ($this->model instanceof EntitableInterface && !$this->useModel)
 		{
@@ -30,7 +22,7 @@ class EntityBuilder extends EloquentBuilder {
 			return $this->model->newEntityCollection($entities);
 		}
 
-		return $this->model->newCollection($models);
+		return $models;
 	}
 
     /**

@@ -37,7 +37,7 @@ trait AttributeSupportTrait {
      */
     public function getAttributeDefinition($key)
     {
-        return array_get($this->getAttributeDefinitions(), $key, Attribute::getBaseDefintion());
+        return array_get($this->getAttributeDefinitions(), $key, Attribute::getBaseDefinition());
     }
 
     /**
