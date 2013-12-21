@@ -52,7 +52,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		}
 
         $this->exists = $exists;
-		$this->fill(array_merge($this->getDefaultAttributeValues(), $attributes));
+		$this->fill(array_merge($this->getDefaultAttributes(), $attributes));
 	}
 
 	/**
@@ -94,7 +94,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 * Get attribute values
 	 * @return array
 	 */
-	public function getDefaultAttributeValues()
+	public function getDefaultAttributes()
 	{
 		return $this->attributeDefaults;
 	}

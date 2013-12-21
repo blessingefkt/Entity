@@ -64,7 +64,7 @@ abstract class BaseAttributeEntity extends BaseEntity {
      * Get attribute values
      * @return array
      */
-    public function getDefaultAttributeValues()
+    public function getDefaultAttributes()
     {
         $defs = $this->getAttributeDefinitions();
         $defaults = [];
