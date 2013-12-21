@@ -41,6 +41,14 @@ trait CachableMutatorsTrait {
     /**
      * @return array
      */
+    public static function getCachedMutators()
+    {
+        return static::$mutatorCache;
+    }
+
+    /**
+     * @return array
+     */
     public function allGetMutators()
     {
         if (isset(static::$mutatorCache[get_class($this)]['getters']))
@@ -52,9 +60,20 @@ trait CachableMutatorsTrait {
      */
     public function allSetMutators()
     {
-        if (isset(static::$mutatorCache[get_class($this)]['getters']))
+        if (isset(static::$mutatorCache[get_class($this)]['setters']))
             return static::$mutatorCache[get_class($this)]['setters'];
         return [];
+    }
+
+    /**
+     * Get the mutated attributes for a given instance.
+     * @return array
+     */
+    public function allMutators()
+    {
+        $mutators = array_merge($this->allGetMutators(), $this->allSetMutators());
+        ksort($mutators);
+        return $mutators;
     }
 
     /**
@@ -83,13 +102,5 @@ trait CachableMutatorsTrait {
     public function hasSetMutator($key)
     {
         return method_exists($this, 'set'.studly_case($key).static::MUTATOR_SUFFIX);
-    }
-
-    /**
-     * @return array
-     */
-    public static function getCachedMutators()
-    {
-        return static::$mutatorCache;
     }
 } 

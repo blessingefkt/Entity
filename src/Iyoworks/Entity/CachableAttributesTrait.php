@@ -26,7 +26,7 @@ trait CachableAttributesTrait {
             $group = $def['class'];
             static::$attributeDefinitionsCache[$group] = array_replace_recursive(
                 array_get(static::$attributeDefinitionsCache, $group, []),
-                Attribute::getFullDefinition( $def['pivot_data'])
+                Attribute::getFullDefinition($def['pivot_data'])
             );
         }
     }
