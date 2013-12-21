@@ -24,7 +24,7 @@ trait ModelToEntityTrait {
      */
     public function buildEntity(array $attributes, array $relations)
     {
-        $entity = $this->newEntity()->buildNewInstance($attributes);
+        $entity = $this->newEntity()->buildInstance($attributes);
         foreach ($relations as $key => $relation)
             $entity->setAttribute($key, $relation);
         $entity->syncOriginal(true);

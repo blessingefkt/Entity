@@ -457,7 +457,7 @@ class AttributeType extends AttributeEnum {
      */
     protected function buildEntity($class, $data)
     {
-        return with( new $class )->buildNewInstance($data);
+        return with( new $class )->buildInstance($data);
     }
 
     /**
