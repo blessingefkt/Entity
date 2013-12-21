@@ -1,16 +1,15 @@
 <?php namespace Iyoworks\Entity;
-use ArrayAccess;
+
 use DateTime;
-use InvalidArgumentException;
-use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Illuminate\Support\Contracts\JsonableInterface;
+use InvalidArgumentException;
 
 /**
  * Class BaseAttributeEntity
  * @package Iyoworks\Entity
  */
-abstract class BaseAttributeEntity extends BaseEntity
-    implements ArrayAccess, ArrayableInterface, JsonableInterface {
+abstract class BaseAttributeEntity extends BaseEntity {
     use CachableAttributesTrait;
     use AttributeSupportTrait;
 
@@ -51,7 +50,7 @@ abstract class BaseAttributeEntity extends BaseEntity
 
     /**
      * The "booting" method of the entity.
-     * @param BaseEntity $entity
+     * @param BaseAttributeEntity $entity
      * @return void
      */
     protected static function boot($entity)
@@ -97,10 +96,8 @@ abstract class BaseAttributeEntity extends BaseEntity
      */
     public function fill(array $attributes)
     {
-        ksort($attributes);
-
         foreach ($attributes as $key => $value) {
-            if (static::$unguarded  or ( $this->isAttribute($key) and !$this->isGuarded($key) ))
+            if ($this->isFillable($key))
             {
                 $this->setAttribute($key, $value);
             }
@@ -108,6 +105,7 @@ abstract class BaseAttributeEntity extends BaseEntity
                 throw new MassAssignmentException($key);
             }
         }
+        ksort($this->attributes);
         return $this;
     }
 
@@ -291,6 +289,10 @@ abstract class BaseAttributeEntity extends BaseEntity
                 $format = $this->getAttributeDefinition($key)['format'];
                 $value = $value->format($format);
             }
+            elseif ($value instanceof ArrayableInterface)
+                $value = $value->toArray();
+            elseif ($value instanceof JsonableInterface)
+                $value = json_decode($value->toJson(), 1);
         }
         return $attributes;
     }
@@ -312,6 +314,16 @@ abstract class BaseAttributeEntity extends BaseEntity
     public function totallyGuarded()
     {
         return $this->guarded == array('*') || $this->allAttributesGuarded();
+    }
+
+    /**
+     * Determine if an attribute can be filled.
+     * @param $key
+     * @return bool
+     */
+    public function isFillable($key)
+    {
+        return static::$unguarded  or ($this->isAttribute($key) and !$this->isGuarded($key));
     }
 
     /**

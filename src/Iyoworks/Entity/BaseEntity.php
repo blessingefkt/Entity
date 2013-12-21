@@ -48,7 +48,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		}
 
         $this->exists = $exists;
-		$this->fill($attributes + $this->getDefaultAttributeValues());
+		$this->fill(array_merge($this->getDefaultAttributeValues(), $attributes));
 	}
 
 	/**
@@ -105,7 +105,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	{
 		$inst = $this->newInstance();
 		$inst->setRawAttributes( (array) $result, true);
-        $this->exists = $exists;
+        $inst->exists = $exists;
 		return $inst;
 	}
 
@@ -116,11 +116,10 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function fill(array $attributes)
 	{
-		ksort($attributes);
-
 		foreach ($attributes as $key => $value) {
             $this->setAttribute($key, $value);
 		}
+        ksort($this->attributes);
 		return $this;
 	}
 
@@ -294,17 +293,6 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	{
 		$this->original = $this->attributes;
 		return $this;
-	}
-
-	/**
-	 * Get the mutated attributes for a given instance.
-	 * @return array
-	 */
-	public function allMutators()
-	{
-        $mutators = array_merge($this->allGetMutators(), $this->allSetMutators());
-        ksort($mutators);
-		return $mutators;
 	}
 
 	/**
