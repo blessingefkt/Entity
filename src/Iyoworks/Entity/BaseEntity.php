@@ -28,6 +28,10 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
     /**
      * @var array
      */
+    protected $attributeDefaults = [];
+    /**
+     * @var array
+     */
     protected $original = [];
     /**
      * @var bool
@@ -92,7 +96,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function getDefaultAttributeValues()
 	{
-		return [];
+		return $this->attributeDefaults;
 	}
 
     /**

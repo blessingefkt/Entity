@@ -69,7 +69,8 @@ abstract class BaseAttributeEntity extends BaseEntity {
         $defs = $this->getAttributeDefinitions();
         $defaults = [];
         foreach ($defs as $key => $def) {
-            $defaults[$key] = Attribute::get($def, null);
+            $value = Attribute::get($def, array_get($this->attributeDefaults, $key, null));
+            $defaults[$key] = $value;
         }
         return $defaults;
     }
