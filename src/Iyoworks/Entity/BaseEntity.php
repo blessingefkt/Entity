@@ -101,7 +101,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      * @param bool $exists
      * @return \Iyoworks\Entity\BaseEntity
      */
-	public function buildNewInstance($result, $exists = true)
+	public function buildInstance($result, $exists = true)
 	{
 		$inst = $this->newInstance();
 		$inst->setRawAttributes( (array) $result, true);
@@ -249,7 +249,9 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function replicate()
 	{
-		return $this->buildNewInstance($this->attributes);
+        $attributes = $this->attributes;
+        unset($attributes[$this->getKeyName()]);
+		return $this->buildInstance($attributes, false);
 	}
 
 	/**
@@ -269,6 +271,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function setRawAttributes(array $attributes, $sync = false)
 	{
+        ksort($attributes);
 		$this->attributes = $attributes;
         if ($sync) $this->syncOriginal();
 	}

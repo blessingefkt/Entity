@@ -75,20 +75,6 @@ abstract class BaseAttributeEntity extends BaseEntity {
     }
 
     /**
-     * Creates a new entity from the query builder result
-     * @param  array $result
-     * @param bool $exists
-     * @return \Iyoworks\Entity\BaseEntity
-     */
-    public function buildNewInstance($result, $exists = true)
-    {
-        static::unguard();
-        $inst = parent::buildNewInstance($result, $exists);
-        static::reguard();
-        return $inst;
-    }
-
-    /**
      * Set the entity's attibutes
      * @param  array  $attributes
      * @return BaseEntity
