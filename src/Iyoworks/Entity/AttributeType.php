@@ -186,15 +186,21 @@ class AttributeType extends AttributeEnum {
     public function setEntity($value, array $def)
     {
         $class = $def['class'];
-        if (is_array($value) and is_subclass_of($class, 'Iyoworks\Entity\BaseEntity'))
-        {
-            if ($def['many'])
-            {
+        if (is_array($value) and is_subclass_of($class, 'Iyoworks\Entity\BaseEntity')) {
+            if ($def['many']) {
                 $collection = $this->makeCollection($def['collection']);
-
-                foreach ($value as $_ent)
-                {
-                    $collection[ $_ent[ $def['indexKey'] ] ] = $this->buildEntity($class, $_ent);
+                $keyName = isset($def['indexKey']) ? $def['indexKey'] : null;
+                if ($keyName){
+                    foreach ($value as $_ent) {
+                        $_ent = $this->buildEntity($class, $_ent);
+                        $collection[ $_ent->$keyName ] = $_ent;
+                    }
+                }
+                else {
+                    foreach ($value as $_ent) {
+                        $_ent = $this->buildEntity($class, $_ent);
+                        $collection[] = $_ent;
+                    }
                 }
                 return $collection;
             }
@@ -457,7 +463,9 @@ class AttributeType extends AttributeEnum {
      */
     protected function buildEntity($class, $data)
     {
-        return with( new $class )->buildInstance($data);
+        if (is_array($data))
+            return with( new $class )->buildInstance($data);
+        return $data;
     }
 
     /**
