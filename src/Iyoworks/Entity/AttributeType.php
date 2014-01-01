@@ -37,6 +37,10 @@ class AttributeType extends AttributeEnum {
         AttributeType::Json => [
             'force' => false
         ],
+        AttributeType::Mixed => [
+            'set_callback' => null,
+            'get_callback' => null
+        ],
         AttributeType::Timestamp => [
             'format' => 'Y-m-d H:i:s'
         ],
@@ -284,6 +288,30 @@ class AttributeType extends AttributeEnum {
             $output = json_decode($value, 1);
 
         return $output;
+    }
+
+    /**
+     * @param $value
+     * @param array $def
+     * @return int
+     */
+    public function setMixed($value, array $def)
+    {
+        if ($def['set_callback'])
+            return call_user_func([$this, $def['set_callback']], $value);
+        return  $value;
+    }
+
+    /**
+     * @param $value
+     * @param array $def
+     * @return mixed
+     */
+    public function getMixed($value, array $def)
+    {
+        if ($def['get_callback'])
+            return call_user_func([$this, $def['get_callback']], $value);
+        return  $value;
     }
 
     /**
