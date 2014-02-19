@@ -92,8 +92,7 @@ abstract class BaseProtectedEntity extends BaseEntity {
      */
     public function totallyGuarded()
     {
-        return $this->guarded == array('*')
-            || count(array_diff_key($this->transforms, $this->guarded)) > 0;
+        return $this->guarded == array('*');
     }
 
     /**

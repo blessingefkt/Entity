@@ -34,7 +34,7 @@ class Transformer {
      */
     public function smash($key, $value)
     {
-        $type = $this->parseType($key, $ruleArgs);
+        list($type, $ruleArgs) = $this->parseType($key);
         $method = 'smash'.studly_case($type);
         if(method_exists(get_called_class(), $method))
             return $this->$method($value, $ruleArgs);
@@ -48,8 +48,8 @@ class Transformer {
      */
     public function build($key, $value)
     {
-        $type = $this->parseType($key, $ruleArgs);
-        $method = 'get'.studly_case($type);
+        list($type, $ruleArgs) = $this->parseType($key);
+        $method = 'build'.studly_case($type);
         if(method_exists(get_called_class(), $method))
             return $this->$method($value, $ruleArgs);
         return $this->buildExtendedType($type, $value, $ruleArgs);
@@ -72,7 +72,7 @@ class Transformer {
     {
         $out = [];
         foreach ($data as $key => $value) {
-          $out[$key] = $this->transform($this->rules[$key], $value);
+            $out[$key] = $this->smash($key, $value);
         }
         return $out;
     }
@@ -124,7 +124,7 @@ class Transformer {
      */
     public function smashHandle($value, $ruleArgs)
     {
-        return handle($value);
+        return Str::camel($value);
     }
 
     /**
@@ -270,26 +270,23 @@ class Transformer {
      * @param Fluent $ruleArgs
      * @return string
      */
-    public function parseType($key, &$ruleArgs = null)
+    public function parseType($key)
     {
-        $type = array_get($this->rules, $key, null);
-        $typeArgs = [];
+        $ruleArgs = new Fluent();
+        $type = array_get($this->rules, $key, '_undefined');
         if (Str::contains($type, ',')) {
             $typeArgs = explode(',', $type);
             $type = trim(array_shift($typeArgs));
-            $temp = [];
             foreach ($typeArgs as $arg) {
                 list($key, $value) = explode(":", $arg);
-                $temp[$key] = trim($value);
+                $ruleArgs->$key = trim($value);
             }
-            $typeArgs = $temp; 
         }
         if (class_exists($type)) {
-            $typeArgs['class'] = $type;
+            $ruleArgs->class = $type;
             $type = 'object';
         }
-        $ruleArgs = new Fluent($typeArgs);
-        return $type;
+        return [$type, $ruleArgs];
     }
 
     /**
