@@ -6,10 +6,10 @@ use Illuminate\Support\Contracts\JsonableInterface;
 use InvalidArgumentException;
 
 /**
- * Class BaseAttributeEntity
+ * Class BaseProtectedEntity
  * @package Iyoworks\Entity
  */
-abstract class BaseAttributeEntity extends BaseEntity {
+abstract class BaseProtectedEntity extends BaseEntity {
 
     /**
      * @const string
