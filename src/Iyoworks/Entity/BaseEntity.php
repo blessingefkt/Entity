@@ -3,6 +3,7 @@
 use ArrayAccess;
 use Illuminate\Support\Contracts\ArrayableInterface;
 use Illuminate\Support\Contracts\JsonableInterface;
+use InvalidArgumentException;
 
 /**
  * Class BaseEntity
@@ -15,20 +16,18 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      */
     const MUTATOR_SUFFIX = 'Attribute';
 
+    protected static $booted = [];
+
     /**
-     * The array of booted entities.
+     * transformation rules.
      * @var array
      */
-    protected static $booted = array();
+    protected $transforms = [];
 
     /**
      * @var array
      */
     protected $attributes = [];
-    /**
-     * @var array
-     */
-    protected $attributeDefaults = [];
     /**
      * @var array
      */
@@ -45,12 +44,11 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      */
 	public function __construct(array $attributes = [], $exists = false)
 	{
-		if ( ! isset(static::$booted[$class = get_class($this)]))
-		{
-			static::boot($this);
-			static::$booted[$class] = true;
-		}
-
+        if (!isset(static::$booted[$_class = get_class($this)]))
+        {
+            static::boot($this);
+            static::$booted[$_class] = true;
+        }
         $this->exists = $exists;
 		$this->fill(array_merge($this->getDefaultAttributes(), $attributes));
 	}
@@ -60,25 +58,20 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 * @param  array   $attributes
 	 * @return \Iyoworks\Entity\BaseEntity
 	 */
-	public static function make(array $attributes = [])
-	{
-		return with(new static)->newInstance($attributes);
-	}
-
-	/**
-	 * Create a new instance
-	 * @param  array   $attributes
-	 * @return \Iyoworks\Entity\BaseEntity
-	 */
 	public function newInstance(array $attributes = array())
 	{
-		// This method just provides a convenient way for us to generate fresh entity
-		// instances of this current entity. It is particularly useful during the
-		// hydration of new objects via the Eloquent query builder instances.
-		$entity = new static($attributes);
-        
-		return $entity;
+		return new static($attributes);
 	}
+
+    /**
+     * Create a new instance
+     * @param  array   $attributes
+     * @return \Iyoworks\Entity\BaseEntity
+     */
+    public static function make(array $attributes = [])
+    {
+        return with(new static)->newInstance($attributes);
+    }
 
     /**
      * The "booting" method of the entity.
@@ -96,7 +89,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function getDefaultAttributes()
 	{
-		return $this->attributeDefaults;
+		return [];
 	}
 
     /**
@@ -108,7 +101,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	public function buildInstance($result, $exists = true)
 	{
 		$inst = $this->newInstance();
-		$inst->setRawAttributes( (array) $result, true);
+		$inst->setRawAttributes((array) $result, true);
         $inst->exists = $exists;
 		return $inst;
 	}
@@ -120,10 +113,8 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function fill(array $attributes)
 	{
-		foreach ($attributes as $key => $value) {
+		foreach ($attributes as $key => $value)
             $this->setAttribute($key, $value);
-		}
-        ksort($this->attributes);
 		return $this;
 	}
 
@@ -135,13 +126,11 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	protected function getAttributeFromArray($key)
 	{
 		if (array_key_exists($key, $this->attributes))
-		{
-			return $this->attributes[$key];
-		}
+            return $this->attributes[$key];
 	}
 
 	/**
-	 * Get a plain attribute (not a entities).
+	 * Get an attribute
 	 * @param  string  $key
 	 * @return mixed
 	 */
@@ -149,15 +138,10 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	{
 		$value = $this->getAttributeFromArray($key);
 
-		// If the attribute has a get mutator, we will call that then return what
-		// it returns as the value, which is useful for transforming values on
-		// retrieval from the entity to a form that is more useful for usage.
 		if ($this->hasGetMutator($key))
-		{
-			return $this->mutateAttribute($key, $value);
-		}
+            return $this->mutateAttribute($key, $value);
 
-		return $value;
+		return $this->transformer()->build($key, $value);
 	}
 
 	/**
@@ -168,33 +152,32 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	public function getAttribute($key)
 	{
 		$inAttributes = array_key_exists($key, $this->attributes);
-		// If the key references an attribute, we can just go ahead and return the
-		// plain attribute value from the entity. This allows every attribute to
-		// be dynamically accessed through the _get method without accessors.
+
 		if ($inAttributes || $this->hasGetMutator($key))
-		{
-			return $this->getAttributeValue($key);
-		}
+            return $this->getAttributeValue($key);
+
+        if (!$this->isDefinedAttribute($key))
+            if ($this->strict) $this->undefinedAttributeError($key);
+
+        return $this->transformer()->build($key, null);
 	}
 
-	/**
-	 * Set a given attribute on the entity.
-	 * @param  string  $key
-	 * @param  mixed   $value
-	 * @return void
-	 */
-	public function setAttribute($key, $value)
-	{
-		// First we will check for the presence of a mutator for the set operation
-		// which simply lets the developers tweak the attribute as it is set on
-		// the entity, such as "json_encoding" an listing of data for storage.
-		if ($this->hasSetMutator($key))
-		{
-			return $this->mutateAttributeSetter($key, $value);
-		}
+    /**
+     * Set a given attribute on the entity.
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return void
+     */
+    public function setAttribute($key, $value)
+    {
+        if ($this->hasSetMutator($key))
+            return $this->mutateAttributeSetter($key, $value);
 
-		$this->attributes[$key] = $value;
-	}
+        if (!$this->isDefinedAttribute($key))
+            if ($this->strict) $this->undefinedAttributeError($key);
+
+        $this->attributes[$key] = $value;
+    }
 
 	/**
 	 * Get the value of an attribute using its mutator.
@@ -234,16 +217,22 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	/**
 	 * Get the attributes that have been changed since last sync.
 	 * @param string|null $attribute
-	 * @return array
+	 * @return array|str
 	 */
 	public function getDirty($attribute = null)
 	{
-		if(empty($this->original)) return $this->attributes;
-		$dirty = array();
-		foreach ($this->attributes as $key => $value) {
-			$addToDirty =  !array_key_exists($key, $this->original) || $value !== $this->original[$key];
-			if ($addToDirty) $dirty[$key] = $value;
-		}
+		if(empty($this->original))
+            $dirty = $this->attributes;
+        else
+        {
+            $dirty = array();
+            foreach ($this->attributes as $key => $value)
+            {
+                $addToDirty =  !array_key_exists($key, $this->original) || $value !== $this->original[$key];
+                if ($addToDirty) $dirty[$key] = $value;
+            }
+        }
+        if ($attribute) return array_get($dirty, $attribute);
 		return $dirty;
 	}
 
@@ -275,7 +264,6 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	 */
 	public function setRawAttributes(array $attributes, $sync = false)
 	{
-        ksort($attributes);
 		$this->attributes = $attributes;
         if ($sync) $this->syncOriginal();
 	}
@@ -302,45 +290,13 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 		return $this;
 	}
 
-	/**
-	 * Check if entity exists
-	 * @return bool
-	 */
-	public function exists()
-	{
-        return $this->exists;
-	}
-
-	/**
-	 * Get the entity key name
-	 * @return string
-	 */
-	public function getKeyName()
-	{
-		return 'id';
-	}
-
-	/**
-	 * Get the entity key
-	 * @return int|mixed
-	 */
-	public function getKey()
-	{
-		return $this->{$this->getKeyName()};
-	}
-
     /**
-     * Convert the entity instance to an array.
-     * @return array
+     * Spin through attributes and get values that have mutator methods
+     * @param $attributes
+     * @return mixed
      */
-    public function toArray()
+    protected function processArray($attributes)
     {
-        $attributes = $this->attributes;
-
-        // We want to spin through all the mutated attributes for this entity and call
-        // the mutator for the attribute. We cache off every mutated attributes so
-        // we don't have to constantly check on attributes that actually change.
-
         foreach ($this->allGetMutators() as $key)
         {
             if (! array_key_exists($key, $attributes)) continue;
@@ -349,6 +305,31 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
         }
 
         return $attributes;
+    }
+
+    /**
+     * Convert the entity instance to an array.
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->processArray($this->attributes);
+    }
+
+    /**
+     * @return Transformer
+     */
+    public function transformer()
+    {
+        return new Transformer($this->transforms);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function toStringArray()
+    {
+        return $this->transformer()->smashData($this->toArray());
     }
 
 	/**
@@ -360,6 +341,63 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	{
 		return json_encode($this->toArray(), $options);
 	}
+
+    /**
+     * Checks if an attribute has a definition
+     * @param  string
+     * @return boolean
+     */
+    public function isDefinedAttribute($key)
+    {
+        return array_key_exists($key, $this->transforms);
+    }
+
+    /**
+     * Determine if an attribute exists
+     * @param  string  $key
+     * @return boolean
+     */
+    public function isAttribute($key)
+    {
+        if(!$this->strict) return true;
+        return $this->isDefinedAttribute($key);
+    }
+
+    /**
+     * @param $key
+     * @throws InvalidArgumentException
+     */
+    protected function undefinedAttributeError($key)
+    {
+        throw new InvalidArgumentException($key);
+    }
+
+    /**
+     * Check if entity exists
+     * @return bool
+     */
+    public function exists()
+    {
+        return $this->exists;
+    }
+
+    /**
+     * Get the entity key name
+     * @return string
+     */
+    public function getKeyName()
+    {
+        return 'id';
+    }
+
+    /**
+     * Get the entity key
+     * @return int|mixed
+     */
+    public function getKey()
+    {
+        return $this->{$this->getKeyName()};
+    }
 
 	/**
 	 * Dynamically retrieve attributes on the entity.

@@ -10,8 +10,6 @@ use InvalidArgumentException;
  * @package Iyoworks\Entity
  */
 abstract class BaseAttributeEntity extends BaseEntity {
-    use CachableAttributesTrait;
-    use AttributeSupportTrait;
 
     /**
      * @const string
@@ -22,6 +20,10 @@ abstract class BaseAttributeEntity extends BaseEntity {
      */
     const UPDATED_AT = 'updated_at';
     /**
+     * @const string
+     */
+    const DELETED_AT = 'deleted_at';
+    /**
      * @var bool
      */
     protected $strict = false;
@@ -30,17 +32,17 @@ abstract class BaseAttributeEntity extends BaseEntity {
      */
     protected $usesTimestamps = true;
     /**
+     * @var bool
+     */
+    protected $softDeletes = false;
+    /**
      * @var array
      */
-    protected $attributeDefinitions = [];
+    protected $guarded = [];
     /**
-     * @var array|null
+     * @var array
      */
-    protected $guarded;
-    /**
-     * @var array|null
-     */
-    protected $visible;
+    protected $visible = [];
 
     /**
      * Indicates if all mass assignment is enabled.
@@ -49,42 +51,21 @@ abstract class BaseAttributeEntity extends BaseEntity {
     protected static $unguarded = false;
 
     /**
-     * The "booting" method of the entity.
-     * @param BaseAttributeEntity $entity
-     * @return void
+     * @inheritdoc
      */
     protected static function boot($entity)
     {
         $class = get_class($entity);
-        static::cacheAttributeDefinitions($class, $entity->getRawAttributeDefinitions());
         static::cacheMutators($class);
     }
 
     /**
-     * Get attribute values
-     * @return array
-     */
-    public function getDefaultAttributes()
-    {
-        $defs = $this->getAttributeDefinitions();
-        $defaults = [];
-        foreach ($defs as $key => $def) {
-            $value = Attribute::get($def, array_get($this->attributeDefaults, $key, null));
-            $defaults[$key] = $value;
-        }
-        return $defaults;
-    }
-
-    /**
-     * Set the entity's attibutes
-     * @param  array  $attributes
-     * @return BaseEntity
-     * @throws MassAssignmentException;
+     * @inheritdoc
      */
     public function fill(array $attributes)
     {
         foreach ($attributes as $key => $value) {
-            if ($this->isFillable($key))
+            if ($this->canFill($key))
             {
                 $this->setAttribute($key, $value);
             }
@@ -92,196 +73,7 @@ abstract class BaseAttributeEntity extends BaseEntity {
                 throw new MassAssignmentException($key);
             }
         }
-        ksort($this->attributes);
         return $this;
-    }
-
-    /**
-     * Get a plain attribute (not a entities).
-     * @param  string  $key
-     * @return mixed
-     */
-    protected function getAttributeValue($key)
-    {
-        $value = $this->getAttributeFromArray($key);
-
-        if($this->isDefinedAttribute($key))
-        {
-            $value = Attribute::get($this->getAttributeDefinition($key), $value);
-        }
-
-        // If the attribute has a get mutator, we will call that then return what
-        // it returns as the value, which is useful for transforming values on
-        // retrieval from the entity to a form that is more useful for usage.
-        if ($this->hasGetMutator($key))
-        {
-            return $this->mutateAttribute($key, $value);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Get an attribute from the entity.
-     * @param  string  $key
-     * @return mixed
-     */
-    public function getAttribute($key)
-    {
-        $inAttributes = array_key_exists($key, $this->attributes);
-        // If the key references an attribute, we can just go ahead and return the
-        // plain attribute value from the entity. This allows every attribute to
-        // be dynamically accessed through the _get method without accessors.
-        if ($inAttributes || $this->isEntity($key) || $this->hasGetMutator($key))
-        {
-            return $this->getAttributeValue($key);
-        }
-
-        if (!$this->isDefinedAttribute($key))
-            return $this->getUndefinedAttribute($key);
-
-        // If the value has not been set, check if it has a valid attribute type
-        // if so, get the default value for the type
-        return Attribute::get($this->getAttributeDefinition($key), null);
-    }
-
-    /**
-     * @param string $key
-     * @throws \InvalidArgumentException
-     */
-    protected function getUndefinedAttribute($key)
-    {
-        if ($this->strict)
-            throw new InvalidArgumentException($key);
-    }
-
-    /**
-     * Set a given attribute on the entity.
-     * @param  string  $key
-     * @param  mixed   $value
-     * @return void
-     */
-    public function setAttribute($key, $value)
-    {
-        if($this->isDefinedAttribute($key))
-            $value = Attribute::set($this->getAttributeDefinition($key), $value);
-
-        // First we will check for the presence of a mutator for the set operation
-        // which simply lets the developers tweak the attribute as it is set on
-        // the entity, such as "json_encoding" an listing of data for storage.
-        if ($this->hasSetMutator($key))
-        {
-            return $this->mutateAttributeSetter($key, $value);
-        }
-
-        if (!$this->isDefinedAttribute($key))
-            return $this->setUndefinedAttribute($key, $value);
-
-        $this->attributes[$key] = $value;
-    }
-
-    /**
-     * @param string $key
-     * @param mixed $value
-     * @throws \InvalidArgumentException
-     */
-    protected function setUndefinedAttribute($key, $value)
-    {
-        if ($this->strict)
-            throw new InvalidArgumentException($key);
-        $this->attributes[$key] = $value;
-    }
-
-    /**
-     * Determine if an attribute exists
-     * @param  string  $key
-     * @return boolean
-     */
-    public function isAttribute($key)
-    {
-        if(!$this->strict) return true;
-        return $this->isDefinedAttribute($key);
-    }
-
-    /**
-     * Get raw attribute definitions
-     * @return array
-     */
-    public function getRawAttributeDefinitions()
-    {
-        if($this->usesTimestamps)
-        {
-            $this->attributeDefinitions[static::CREATED_AT] = Attribute::Timestamp;
-            $this->attributeDefinitions[static::UPDATED_AT] = Attribute::Timestamp;
-        }
-        return $this->attributeDefinitions;
-    }
-
-    /**
-     * Get an attribute array of all visible attributes.
-     * @return array
-     */
-    protected function getVisibleAttributes()
-    {
-        if (count($this->getVisibleKeys()) > 0)
-        {
-            return array_intersect_key($this->attributes, array_flip($this->getVisibleKeys()));
-        }
-        return $this->attributes;
-    }
-
-    /**
-     * Get the keys of all attributes that are visible
-     * @return array
-     */
-    protected function getVisibleKeys()
-    {
-        if (is_null($this->visible))
-        {
-            foreach ($this->getAttributeDefinitions() as $key => $def)
-            {
-                if ($def['visible']) $this->visible[$key] = $key;
-            }
-        }
-        return $this->visible;
-    }
-
-    /**
-     * Get the keys of all attributes that are guarded
-     * @return array
-     */
-    protected function getGuardedKeys()
-    {
-        if (is_null($this->guarded))
-        {
-            foreach ($this->getAttributeDefinitions() as $key => $def)
-            {
-                if ($def['guarded']) $this->guarded[$key] = $key;
-            }
-        }
-        return $this->guarded;
-    }
-
-    /**
-     * Convert attributes to strings
-     * @param array $attributes
-     * @return array
-     */
-    protected function processArray(array $attributes)
-    {
-        foreach ($attributes as $key => &$value)
-        {
-            if($this->isDateType($key) and $value instanceof \DateTime)
-            {
-                $format = $this->getAttributeDefinition($key)['format'];
-                $value = $value->format($format);
-            }
-            elseif ($value instanceof ArrayableInterface)
-                $value = $value->toArray();
-            elseif ($value instanceof JsonableInterface)
-                $value = json_decode($value->toJson(), 1);
-        }
-        return $attributes;
     }
 
     /**
@@ -291,7 +83,7 @@ abstract class BaseAttributeEntity extends BaseEntity {
      */
     public function isGuarded($key)
     {
-        return $this->isGuardedAttribute($key) or $this->totallyGuarded();
+        return in_array($key, $this->guarded) || $this->totallyGuarded();
     }
 
     /**
@@ -300,7 +92,8 @@ abstract class BaseAttributeEntity extends BaseEntity {
      */
     public function totallyGuarded()
     {
-        return $this->guarded == array('*') || $this->allAttributesGuarded();
+        return $this->guarded == array('*')
+            || count(array_diff_key($this->transforms, $this->guarded)) > 0;
     }
 
     /**
@@ -308,77 +101,39 @@ abstract class BaseAttributeEntity extends BaseEntity {
      * @param $key
      * @return bool
      */
-    public function isFillable($key)
+    public function canFill($key)
     {
         return static::$unguarded  or ($this->isAttribute($key) and !$this->isGuarded($key));
     }
 
     /**
-     * Get an array of all attributes that are not entities
+     * Get default attribute values
      * @return array
      */
-    public function attributeArray()
+    public function getDefaultAttributes()
     {
-        $keys = array_flip($this->getNonEntityAttributes());
-        $attributes = array_intersect_key($this->attributes, $keys);
-
-        foreach ($this->allGetMutators() as $key)
-        {
-            if (! array_key_exists($key, $attributes)) continue;
-
-            $attributes[$key] = $this->mutateAttribute($key, $attributes[$key]);
-        }
-
-        return $this->processArray($attributes);
+        $atts = [];
+        if ($this->usesTimestamps)
+            $atts = [self::CREATED_AT => 'datetime', self::UPDATED_AT => 'datetime'];
+        if ($this->softDeletes)
+            $atts[self::DELETED_AT] = 'datetime';
+        return $atts;
     }
 
     /**
-     * Get an array of all entities
-     * @return array
-     */
-    public function entityArray()
-    {
-        $keys = array_flip($this->getEntityAttributes());
-        $attributes = array_intersect_key($this->attributes, $keys);
-
-        foreach ($attributes as $key => &$value)
-        {
-            if ($this->hasGetMutator($key))
-                $value = $this->mutateAttribute($key, $value);
-            if ($attributes instanceof ArrayableInterface)
-                $value = $value->toArray();
-            elseif ($attributes instanceof JsonableInterface)
-                $value = json_decode($value->toJson(), 1);
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * Convert the all visbile attributes to an array.
-     * @return array
+     * @inheritdoc
      */
     public function toArray()
     {
-        $attributes = $this->getVisibleAttributes();
-
-        // We want to spin through all the mutated attributes for this entity and call
-        // the mutator for the attribute. We cache off every mutated attributes so
-        // we don't have to constantly check on attributes that actually change.
-
-        foreach ($this->allGetMutators() as $key)
+        if (!empty($this->visible))
         {
-            if (! array_key_exists($key, $attributes)) continue;
-
-            $attributes[$key] = $this->mutateAttribute($key, $attributes[$key]);
+            $attributes = [];
+            foreach ($this->visible as $key)
+                 $attributes[$key] = $this->attributes[$key];
+            return $this->processArray($attributes);
         }
-
-        return $this->processArray($attributes);
+        return $this->processArray($this->attributes);
     }
-
-    /******************************************
-     *** Static Methods
-     *****************************************/
 
     /**
      * Disable all mass assignable restrictions.
