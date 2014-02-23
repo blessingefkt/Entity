@@ -127,8 +127,8 @@ abstract class BaseProtectedEntity extends BaseEntity {
         $atts = $this->defaults;
         if ($this->timestamps)
         {
-            $atts[self::CREATED_AT] = new DateTime();
-            $atts[self::UPDATED_AT] = new DateTime();
+            $atts[self::CREATED_AT] = $this->newTimestamp();
+            $atts[self::UPDATED_AT] = $this->newTimestamp();
         }
         if ($this->softDeletes) $atts[self::DELETED_AT] = null;
         return $atts;
@@ -165,5 +165,13 @@ abstract class BaseProtectedEntity extends BaseEntity {
     public static function reguard()
     {
         static::$unguarded = false;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function newTimestamp()
+    {
+        return new DateTime();
     }
 }
