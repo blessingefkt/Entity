@@ -27,6 +27,11 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
     /**
      * @var array
      */
+    protected $defaults = [];
+
+    /**
+     * @var array
+     */
     protected $attributes = [];
     /**
      * @var array
@@ -56,7 +61,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	/**
 	 * Create a new instance
 	 * @param  array   $attributes
-	 * @return \Iyoworks\Entity\BaseEntity
+	 * @return static
 	 */
 	public function newInstance(array $attributes = array())
 	{
@@ -66,7 +71,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
     /**
      * Create a new instance
      * @param  array   $attributes
-     * @return \Iyoworks\Entity\BaseEntity
+     * @return static
      */
     public static function make(array $attributes = [])
     {
@@ -83,20 +88,27 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 
 	}
 
-	/**
-	 * Get attribute values
-	 * @return array
-	 */
-	public function getDefaultAttributes()
-	{
-		return [];
-	}
+    /**
+     * @return array
+     */
+    public function getTransformations()
+    {
+        return $this->transforms;
+    }
+
+    /**
+     * @return array
+     */
+    public function getDefaultAttributes()
+    {
+        return $this->defaults;
+    }
 
     /**
      * Creates a new entity from the query builder result
      * @param  array $result
      * @param bool $exists
-     * @return \Iyoworks\Entity\BaseEntity
+     * @return static
      */
 	public function buildInstance($result, $exists = true)
 	{
@@ -109,7 +121,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 	/**
 	 * Set the entity's attributes
 	 * @param  array  $attributes
-	 * @return BaseEntity
+	 * @return $this
 	 */
 	public function fill(array $attributes)
 	{
@@ -238,7 +250,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 
 	/**
 	 * Clone the entity into a new, non-existing instance.
-	 * @return \Iyoworks\Entity\BaseEntity
+	 * @return static
 	 */
 	public function replicate()
 	{
@@ -282,7 +294,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
 
 	/**
 	 * Sync the original attributes with the current.
-	 * @return \Iyoworks\Entity\BaseEntity
+	 * @return $this
 	 */
 	public function syncOriginal()
 	{
@@ -329,7 +341,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      */
     public function toStringArray()
     {
-        return $this->transformer()->smashData($this->toArray());
+        return $this->transformer()->smashAllData($this->toArray());
     }
 
 	/**

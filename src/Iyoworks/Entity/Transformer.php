@@ -66,6 +66,7 @@ class Transformer {
     }
 
     /**
+     * @param array $data
      * @return array
      */
     public function smashData($data)
@@ -75,6 +76,19 @@ class Transformer {
             $out[$key] = $this->smash($key, $value);
         }
         return $out;
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    public function smashAllData(array $data)
+    {
+        foreach ($this->rules as $key => $type) {
+            $value = isset($data[$key]) ? $data[$key] : null;
+            $data[$key] = $this->smash($key, $value);
+        }
+        return $data;
     }
 
     /**

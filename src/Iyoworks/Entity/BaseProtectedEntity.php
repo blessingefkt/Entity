@@ -3,7 +3,6 @@
 use DateTime;
 use Illuminate\Support\Contracts\ArrayableInterface;
 use Illuminate\Support\Contracts\JsonableInterface;
-use InvalidArgumentException;
 
 /**
  * Class BaseProtectedEntity
@@ -30,7 +29,7 @@ abstract class BaseProtectedEntity extends BaseEntity {
     /**
      * @var bool
      */
-    protected $usesTimestamps = true;
+    protected $timestamps = true;
     /**
      * @var bool
      */
@@ -106,16 +105,32 @@ abstract class BaseProtectedEntity extends BaseEntity {
     }
 
     /**
-     * Get default attribute values
+     * @return array
+     */
+    public function getTransformations()
+    {
+        if ($this->timestamps)
+            $dates = [self::CREATED_AT => 'timestamp', self::UPDATED_AT => 'timestamp'];
+        else
+            $dates = [];
+        if ($this->softDeletes)
+            $dates[self::DELETED_AT] = 'timestamp';
+        $this->transforms = array_merge($dates, $this->transforms);
+        return $this->transforms;
+    }
+
+    /**
      * @return array
      */
     public function getDefaultAttributes()
     {
-        $atts = [];
-        if ($this->usesTimestamps)
-            $atts = [self::CREATED_AT => 'datetime', self::UPDATED_AT => 'datetime'];
-        if ($this->softDeletes)
-            $atts[self::DELETED_AT] = 'datetime';
+        $atts = $this->defaults;
+        if ($this->timestamps)
+        {
+            $atts[self::CREATED_AT] = new DateTime();
+            $atts[self::UPDATED_AT] = new DateTime();
+        }
+        if ($this->softDeletes) $atts[self::DELETED_AT] = null;
         return $atts;
     }
 
