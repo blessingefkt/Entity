@@ -40,6 +40,10 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
     /**
      * @var bool
      */
+    protected $_strict = false;
+    /**
+     * @var bool
+     */
     public $exists = true;
 
     /**
@@ -169,7 +173,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
             return $this->getAttributeValue($key);
 
         if (!$this->isDefinedAttribute($key))
-            if ($this->strict) $this->undefinedAttributeError($key);
+            if ($this->_strict) $this->undefinedAttributeError($key);
 
         return $this->transformer()->build($key, null);
 	}
@@ -186,7 +190,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
             return $this->mutateAttributeSetter($key, $value);
 
         if (!$this->isDefinedAttribute($key))
-            if ($this->strict) $this->undefinedAttributeError($key);
+            if ($this->_strict) $this->undefinedAttributeError($key);
 
         $this->attributes[$key] = $value;
     }
@@ -371,7 +375,7 @@ abstract class BaseEntity implements ArrayAccess, ArrayableInterface, JsonableIn
      */
     public function isAttribute($key)
     {
-        if(!$this->strict) return true;
+        if(!$this->_strict) return true;
         return $this->isDefinedAttribute($key);
     }
 

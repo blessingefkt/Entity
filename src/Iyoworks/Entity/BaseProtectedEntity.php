@@ -25,10 +25,6 @@ abstract class BaseProtectedEntity extends BaseEntity {
     /**
      * @var bool
      */
-    protected $strict = false;
-    /**
-     * @var bool
-     */
     protected $timestamps = true;
     /**
      * @var bool
