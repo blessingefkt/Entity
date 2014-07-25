@@ -10,7 +10,8 @@
     ],
     "require": {
         "illuminate/support": ">=4.0",
-        "iyoworks/support": "dev-master"
+        "iyoworks/support": "dev-master",
+        "nesbot/carbon": "~1.0"
     },
     "require-dev": {
         "mockery/mockery": "*"
