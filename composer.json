@@ -17,7 +17,7 @@
         "mockery/mockery": "*"
     },
     "autoload": {
-        "psr-0": {
+        "psr-4": {
             "Iyoworks\\Entity\\": "src"
         }
     },
