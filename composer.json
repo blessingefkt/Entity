@@ -10,7 +10,7 @@
     ],
     "require": {
         "illuminate/support": ">=4.0",
-        "iyoworks/support": "dev-master",
+        "iyoworks/support": "~1",
         "nesbot/carbon": "~1.0"
     },
     "require-dev": {
@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Iyoworks": "src"
+            "Iyoworks\\Entity\\": "src"
         }
     },
     "extra": {
